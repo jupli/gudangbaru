@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
+// Force dynamic untuk mencegah caching
+export const dynamic = 'force-dynamic';
+
 // Definisikan tipe UserRole secara manual untuk menghindari masalah import enum
 type UserRole = "ADMIN" | "WAREHOUSE" | "HEAD_CHEF";
 
