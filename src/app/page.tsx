@@ -24,7 +24,8 @@ export default function LoginPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        setError(data?.error ?? "Login gagal");
+        // Tampilkan pesan error spesifik jika ada
+        setError(data?.details || data?.error || `Login gagal (${res.status})`);
         return;
       }
 

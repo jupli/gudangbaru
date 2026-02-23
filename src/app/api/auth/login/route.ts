@@ -15,37 +15,48 @@ export async function POST(request: Request) {
     );
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-  if (!user || !user.isActive) {
+    if (!user || !user.isActive) {
+      return NextResponse.json(
+        { error: "Email atau password salah" },
+        { status: 401 },
+      );
+    }
+
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) {
+      return NextResponse.json(
+        { error: "Email atau password salah" },
+        { status: 401 },
+      );
+    }
+
+    await createLoginSession({
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
+
+    return NextResponse.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
+  } catch (error: any) {
+    console.error("Login Error:", error);
     return NextResponse.json(
-      { error: "Email atau password salah" },
-      { status: 401 },
+      { 
+        error: "Terjadi kesalahan sistem (500)", 
+        details: error?.message || "Unknown error" 
+      },
+      { status: 500 },
     );
   }
-
-  const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) {
-    return NextResponse.json(
-      { error: "Email atau password salah" },
-      { status: 401 },
-    );
-  }
-
-  await createLoginSession({
-    userId: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-  });
-
-  return NextResponse.json({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-  });
 }
 
