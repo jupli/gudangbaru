@@ -12,10 +12,9 @@ if (!connectionString) {
   const errorMessage = "No database connection string found. Please set DATABASE_URL, POSTGRES_URL, or POSTGRES_PRISMA_URL in Vercel.";
   console.error(errorMessage);
   
-  // Di production (Vercel), kita ingin error ini muncul jelas di log
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(errorMessage);
-  }
+  // Di production (Vercel), kita hanya log error tapi jangan throw dulu
+  // Ini penting agar build step (Next.js build) tidak gagal hanya karena env var belum diset
+  // Koneksi akan gagal saat runtime jika benar-benar dipakai
 }
 
 const pool = new Pool({
