@@ -8,6 +8,15 @@ type OpnameItemInput = {
   reason?: string | null;
 };
 
+type OpnameTransactionClient = Parameters<typeof prisma.$transaction>[0] extends (
+  tx: infer T,
+  ...args: unknown[]
+) => unknown
+  ? T
+  : never;
+
+type OpnameTxClient = OpnameTransactionClient;
+
 export async function GET() {
   const user = await requireUser(["ADMIN", "WAREHOUSE"]);
   if (!user) {
@@ -55,7 +64,7 @@ export async function POST(request: Request) {
     }
   }
 
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: OpnameTxClient) => {
     const opname = await tx.stockOpname.create({
       data: {
         opnameDate,

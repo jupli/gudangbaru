@@ -10,7 +10,14 @@ type IssueItemInput = {
   photoMaterialUrl?: string | null;
 };
 
-type IssueTxClient = typeof prisma;
+type IssueTransactionClient = Parameters<typeof prisma.$transaction>[0] extends (
+  tx: infer T,
+  ...args: unknown[]
+) => unknown
+  ? T
+  : never;
+
+type IssueTxClient = IssueTransactionClient;
 
 async function consumeStockFIFO(
   tx: IssueTxClient,
@@ -145,14 +152,14 @@ export async function POST(request: Request) {
         }
 
         const issueItem = await tx.issueItem.create({
-          data: {
+          data: ({
             issueId: issue.id,
             materialId,
             quantity,
             unit,
             usageNote,
             photoMaterialUrl,
-          },
+          } as unknown as Parameters<(typeof prisma.issueItem)["create"]>[0]["data"]),
         });
 
         await consumeStockFIFO(tx, {
