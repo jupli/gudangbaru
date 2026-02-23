@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { StockTransactionType, type Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 type AdjustmentKind = "ADJUSTMENT" | "WASTE" | "RETURN";
 
@@ -62,12 +62,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const txType =
-    kind === "WASTE"
-      ? StockTransactionType.WASTE
-      : kind === "RETURN"
-        ? StockTransactionType.RETURN
-        : StockTransactionType.ADJUSTMENT;
+  const txType: AdjustmentKind =
+    kind === "WASTE" ? "WASTE" : kind === "RETURN" ? "RETURN" : "ADJUSTMENT";
 
   const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.material.update({

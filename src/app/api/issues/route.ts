@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { StockTransactionType, type Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 type IssueItemInput = {
   materialId: string;
@@ -59,7 +59,7 @@ async function consumeStockFIFO(
     await tx.stockTransaction.create({
       data: {
         materialId: options.materialId,
-        type: StockTransactionType.OUT,
+        type: "OUT",
         quantity: take,
         unit: options.unit,
         department: options.department,

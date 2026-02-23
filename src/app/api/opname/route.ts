@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { StockTransactionType, type Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 type OpnameItemInput = {
   materialId: string;
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
         await tx.stockTransaction.create({
           data: {
             materialId: material.id,
-            type: StockTransactionType.STOCK_OPNAME,
+            type: "STOCK_OPNAME",
             quantity: Math.abs(difference),
             unit: material.unit,
             department: null,

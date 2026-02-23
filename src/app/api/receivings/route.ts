@@ -1,17 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { ReceivingItemStatus, StockTransactionType, type Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
-function normalizeStatus(raw: string): ReceivingItemStatus {
+type ReceivingItemStatusValue = "RECEIVED" | "PARTIAL" | "REJECTED";
+
+function normalizeStatus(raw: string): ReceivingItemStatusValue {
   const value = raw.toUpperCase();
   if (value === "RECEIVED" || value === "DITERIMA") {
-    return ReceivingItemStatus.RECEIVED;
+    return "RECEIVED";
   }
   if (value === "PARTIAL" || value === "DITERIMA_SEBAGIAN") {
-    return ReceivingItemStatus.PARTIAL;
+    return "PARTIAL";
   }
-  return ReceivingItemStatus.REJECTED;
+  return "REJECTED";
 }
 
 async function generateReceivingNumber() {
@@ -152,10 +154,7 @@ export async function POST(request: Request) {
         },
       });
 
-      if (
-        status === ReceivingItemStatus.RECEIVED ||
-        status === ReceivingItemStatus.PARTIAL
-      ) {
+      if (status === "RECEIVED" || status === "PARTIAL") {
         if (quantityAccepted <= 0) {
           continue;
         }
@@ -178,7 +177,7 @@ export async function POST(request: Request) {
         await tx.stockTransaction.create({
           data: {
             materialId,
-            type: StockTransactionType.IN,
+            type: "IN",
             quantity: quantityAccepted,
             unit,
             department: null,

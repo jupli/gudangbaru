@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { MaterialCategory, StockTransactionType } from "@prisma/client";
 
 export async function GET() {
   const user = await requireUser();
@@ -15,7 +14,7 @@ export async function GET() {
       prisma.stockTransaction.groupBy({
         by: ["materialId"],
         where: {
-          type: StockTransactionType.OUT,
+          type: "OUT",
           createdAt: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           },
@@ -25,7 +24,7 @@ export async function GET() {
       prisma.stockTransaction.groupBy({
         by: ["materialId"],
         where: {
-          type: StockTransactionType.IN,
+          type: "IN",
           createdAt: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           },
@@ -35,7 +34,7 @@ export async function GET() {
       prisma.stockTransaction.groupBy({
         by: ["materialId"],
         where: {
-          type: StockTransactionType.WASTE,
+          type: "WASTE",
           createdAt: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           },
@@ -45,7 +44,7 @@ export async function GET() {
       prisma.stockTransaction.groupBy({
         by: ["materialId"],
         where: {
-          type: StockTransactionType.RETURN,
+          type: "RETURN",
           createdAt: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           },
@@ -57,7 +56,7 @@ export async function GET() {
   const totalDry = materials
     .filter(
       (m: (typeof materials)[number]) =>
-        m.category === MaterialCategory.DRY,
+        m.category === "DRY",
     )
     .reduce(
       (sum: number, m: (typeof materials)[number]) =>
@@ -68,7 +67,7 @@ export async function GET() {
   const totalWet = materials
     .filter(
       (m: (typeof materials)[number]) =>
-        m.category === MaterialCategory.WET,
+        m.category === "WET",
     )
     .reduce(
       (sum: number, m: (typeof materials)[number]) =>

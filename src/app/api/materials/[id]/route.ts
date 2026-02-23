@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { MaterialCategory } from "@prisma/client";
 
 type Params = {
   params: Promise<{
@@ -51,7 +50,9 @@ export async function PUT(request: Request, { params }: Params) {
   const unit =
     typeof body.unit === "string" ? body.unit.trim() || existing.unit : existing.unit;
   const category =
-    typeof body.category === "string" ? body.category : existing.category;
+    typeof body.category === "string"
+      ? body.category.toUpperCase()
+      : existing.category;
   const minStock =
     typeof body.minStock === "number" ? body.minStock : existing.minStock;
   const mainSupplier =
@@ -65,10 +66,7 @@ export async function PUT(request: Request, { params }: Params) {
   const isActive =
     typeof body.isActive === "boolean" ? body.isActive : existing.isActive;
 
-  if (
-    category !== MaterialCategory.DRY &&
-    category !== MaterialCategory.WET
-  ) {
+  if (category !== "DRY" && category !== "WET") {
     return NextResponse.json(
       { error: "Kategori tidak valid" },
       { status: 400 },

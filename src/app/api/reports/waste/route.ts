@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { createExcelBuffer, createPdfBuffer } from "@/lib/report-export";
-import { StockTransactionType } from "@prisma/client";
 
 function getDateRange(url: URL) {
   const startParam = url.searchParams.get("start");
@@ -33,7 +32,7 @@ export async function GET(request: Request) {
 
   const txs = await prisma.stockTransaction.findMany({
     where: {
-      type: StockTransactionType.WASTE,
+      type: "WASTE",
       createdAt: {
         gte: start,
         lte: end,
