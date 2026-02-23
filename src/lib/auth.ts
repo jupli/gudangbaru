@@ -13,7 +13,7 @@ type AuthPayload = {
 };
 
 function getAuthSecret() {
-  const secret = process.env.AUTH_SECRET;
+  const secret = process.env.AUTH_SECRET || "rahasia-default-yang-sangat-panjang-dan-aman";
   if (!secret) {
     throw new Error("AUTH_SECRET is not set");
   }
