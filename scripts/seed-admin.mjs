@@ -4,7 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
 
-const { PrismaClient, UserRole } = pkg;
+const { PrismaClient } = pkg;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -31,7 +31,7 @@ async function main() {
       name: "Admin Gudang",
       email,
       passwordHash,
-      role: UserRole.ADMIN,
+      role: "ADMIN",
       isActive: true,
     },
   });
