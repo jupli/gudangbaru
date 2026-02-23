@@ -10,7 +10,7 @@ type IssueItemInput = {
   photoMaterialUrl?: string | null;
 };
 
-type IssueTxClient = Pick<typeof prisma, "stockLot" | "stockTransaction" | "material">;
+type IssueTxClient = typeof prisma;
 
 async function consumeStockFIFO(
   tx: IssueTxClient,
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: IssueTxClient) => {
       const issue = await tx.issue.create({
         data: {
           issueDate,
