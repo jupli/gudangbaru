@@ -1,0 +1,227 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MaterialCategory {
+  DRY
+  WET
+}
+
+enum UserRole {
+  ADMIN
+  WAREHOUSE
+  HEAD_CHEF
+}
+
+enum StockTransactionType {
+  IN
+  OUT
+  ADJUSTMENT
+  WASTE
+  RETURN
+  STOCK_OPNAME
+}
+
+enum ReceivingItemStatus {
+  RECEIVED
+  PARTIAL
+  REJECTED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         UserRole
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  auditLogs        AuditLog[]
+  stockTransactions StockTransaction[]
+  createdReceivings Receiving[]   @relation("ReceivingCreatedBy")
+  createdIssues     Issue[]       @relation("IssueCreatedBy")
+  createdOpnames    StockOpname[] @relation("OpnameCreatedBy")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  createdAt DateTime @default(now())
+}
+
+model Material {
+  id              String    @id @default(cuid())
+  name            String
+  category        MaterialCategory
+  unit            String
+  minStock        Float
+  mainSupplier    String?
+  storageLocation String?
+  isActive        Boolean   @default(true)
+  currentStock    Float     @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  stockLots        StockLot[]
+  transactions     StockTransaction[]
+  receivingItems   ReceivingItem[]
+  issueItems       IssueItem[]
+  stockOpnameItems StockOpnameItem[]
+}
+
+model Receiving {
+  id            String     @id @default(cuid())
+  number        String     @unique
+  receivedAt    DateTime
+  supplierName  String
+  receiverName  String
+  invoiceNumber String?
+  invoiceFileUrl String?
+  createdAt     DateTime   @default(now())
+
+  createdBy   User?    @relation("ReceivingCreatedBy", fields: [createdById], references: [id])
+  createdById String?
+
+  items ReceivingItem[]
+}
+
+model ReceivingItem {
+  id               String             @id @default(cuid())
+  receiving        Receiving          @relation(fields: [receivingId], references: [id])
+  receivingId      String
+  material         Material           @relation(fields: [materialId], references: [id])
+  materialId       String
+  quantityReceived Float
+  quantityAccepted Float
+  unit             String
+  status           ReceivingItemStatus
+
+  inspection ReceivingInspection?
+  stockLots  StockLot[]
+}
+
+model ReceivingInspection {
+  id                 String         @id @default(cuid())
+  receivingItem      ReceivingItem  @relation(fields: [receivingItemId], references: [id])
+  receivingItemId    String         @unique
+  isWet              Boolean
+  temperatureC       Float?
+  colorStatus        String?
+  aromaStatus        String?
+  textureStatus      String?
+  packagingCondition String?
+  hasPest            Boolean?
+  humidityCondition  String?
+  expiryDate         DateTime?
+  photoMaterialUrl   String?
+  photoFormUrl       String?
+  status             String
+  notes              String?
+  createdAt          DateTime @default(now())
+}
+
+model StockLot {
+  id                String       @id @default(cuid())
+  material          Material     @relation(fields: [materialId], references: [id])
+  materialId        String
+  receivingItem     ReceivingItem? @relation(fields: [receivingItemId], references: [id])
+  receivingItemId   String?
+  quantityInitial   Float
+  quantityRemaining Float
+  unit              String
+  expiryDate        DateTime?
+  status            String
+  receivedAt        DateTime
+
+  stockTransactions StockTransaction[]
+}
+
+model Issue {
+  id         String    @id @default(cuid())
+  issueDate  DateTime
+  department String
+  notes      String?
+  createdAt  DateTime  @default(now())
+
+  createdBy   User?   @relation("IssueCreatedBy", fields: [createdById], references: [id])
+  createdById String?
+
+  items IssueItem[]
+}
+
+model IssueItem {
+  id        String   @id @default(cuid())
+  issue     Issue    @relation(fields: [issueId], references: [id])
+  issueId   String
+  material  Material @relation(fields: [materialId], references: [id])
+  materialId String
+  quantity  Float
+  unit      String
+  usageNote String?
+  photoMaterialUrl String?
+
+  stockTransactions StockTransaction[]
+}
+
+model StockTransaction {
+  id         String               @id @default(cuid())
+  material   Material             @relation(fields: [materialId], references: [id])
+  materialId String
+  type       StockTransactionType
+  quantity   Float
+  unit       String
+  department String?
+  reference  String?
+  createdAt  DateTime             @default(now())
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  stockLot   StockLot?  @relation(fields: [stockLotId], references: [id])
+  stockLotId String?
+
+  issueItem   IssueItem? @relation(fields: [issueItemId], references: [id])
+  issueItemId String?
+}
+
+model StockOpname {
+  id         String      @id @default(cuid())
+  opnameDate DateTime
+  notes      String?
+  createdAt  DateTime    @default(now())
+
+  createdBy   User?     @relation("OpnameCreatedBy", fields: [createdById], references: [id])
+  createdById String?
+
+  items StockOpnameItem[]
+}
+
+model StockOpnameItem {
+  id              String      @id @default(cuid())
+  stockOpname     StockOpname @relation(fields: [stockOpnameId], references: [id])
+  stockOpnameId   String
+  material        Material    @relation(fields: [materialId], references: [id])
+  materialId      String
+  systemQuantity   Float
+  physicalQuantity Float
+  difference       Float
+  reason           String?
+}
