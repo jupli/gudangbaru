@@ -81,7 +81,7 @@ export default async function DashboardPage() {
   );
 
   const usageMap = Object.fromEntries(
-    recentUsage.map((g) => [g.materialId, g._sum.quantity ?? 0]),
+    recentUsage.map((g: any) => [g.materialId, g._sum.quantity ?? 0]),
   ) as Record<string, number>;
 
   const usageChart = materials
