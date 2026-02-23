@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import type { Prisma } from "@prisma/client";
 
 type AdjustmentKind = "ADJUSTMENT" | "WASTE" | "RETURN";
 
@@ -65,7 +64,7 @@ export async function POST(request: Request) {
   const txType: AdjustmentKind =
     kind === "WASTE" ? "WASTE" : kind === "RETURN" ? "RETURN" : "ADJUSTMENT";
 
-  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  const result = await prisma.$transaction(async (tx) => {
     await tx.material.update({
       where: { id: material.id },
       data: {

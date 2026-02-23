@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import type { Prisma } from "@prisma/client";
 
 type IssueItemInput = {
   materialId: string;
@@ -11,8 +10,10 @@ type IssueItemInput = {
   photoMaterialUrl?: string | null;
 };
 
+type IssueTxClient = Pick<typeof prisma, "stockLot" | "stockTransaction" | "material">;
+
 async function consumeStockFIFO(
-  tx: Prisma.TransactionClient,
+  tx: IssueTxClient,
   options: {
     materialId: string;
     quantity: number;
@@ -106,7 +107,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const result = await prisma.$transaction(async (tx) => {
       const issue = await tx.issue.create({
         data: {
           issueDate,

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import type { Prisma } from "@prisma/client";
 
 type ReceivingItemStatusValue = "RECEIVED" | "PARTIAL" | "REJECTED";
 
@@ -90,7 +89,7 @@ export async function POST(request: Request) {
   const number = await generateReceivingNumber();
 
   const result = await prisma.$transaction(
-    async (tx: Prisma.TransactionClient) => {
+    async (tx) => {
       const receiving = await tx.receiving.create({
         data: {
           number,
@@ -131,7 +130,7 @@ export async function POST(request: Request) {
       const inspection = item.inspection ?? {};
 
       await tx.receivingInspection.create({
-        data: {
+        data: ({
           receivingItemId: receivingItem.id,
           isWet,
           temperatureC: inspection.temperatureC ?? null,
@@ -151,7 +150,10 @@ export async function POST(request: Request) {
           photoFormUrl: inspection.photoFormUrl ?? null,
           status: inspection.status ?? rawStatus,
           notes: inspection.notes ?? null,
-        },
+          createdAt: new Date(),
+        } as unknown as Parameters<
+          (typeof prisma.receivingInspection)["create"]
+        >[0]["data"]),
       });
 
       if (status === "RECEIVED" || status === "PARTIAL") {

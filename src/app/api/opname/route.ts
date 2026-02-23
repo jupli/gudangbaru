@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import type { Prisma } from "@prisma/client";
 
 type OpnameItemInput = {
   materialId: string;
@@ -56,7 +55,7 @@ export async function POST(request: Request) {
     }
   }
 
-  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  const result = await prisma.$transaction(async (tx) => {
     const opname = await tx.stockOpname.create({
       data: {
         opnameDate,
