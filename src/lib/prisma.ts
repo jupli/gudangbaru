@@ -2,11 +2,11 @@ import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-// Pastikan DATABASE_URL diset di environment variable
-const connectionString = process.env.DATABASE_URL;
+// Gunakan POSTGRES_PRISMA_URL (untuk Vercel Postgres) atau fallback ke DATABASE_URL
+const connectionString = process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL;
 
 if (!connectionString) {
-  const errorMessage = "DATABASE_URL is not set in environment variables. Please configure it in Vercel Settings -> Environment Variables.";
+  const errorMessage = "DATABASE_URL or POSTGRES_PRISMA_URL is not set. Please configure a Postgres Database in Vercel.";
   console.error(errorMessage);
   
   // Di production (Vercel), kita ingin error ini muncul jelas di log
